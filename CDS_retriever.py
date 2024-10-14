@@ -53,7 +53,7 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
     Retrieval function
     """
 
-    print(f"Retrieve year {year}")
+    print(f"\n*** Retrieve year {year} ***")
 
     # year for preliminary era5 reanalysis - now deprecated
     #year_preliminary = 1900
@@ -135,16 +135,25 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
             RES = c.retrieve(
                         kind,
                         retrieve_dict,
-                        outfile
                         )
             
-            # Verify the downloaded files for completeness or errors, re-download if necessary           
-            for i in range(max_attemps):
-                if not is_file_complete(outfile,minimum_steps):
-                    print(f"The downloaded file {outfile} is incomplete. Attempting to download again.")
+            RES.download(outfile)
+            
+            # Verify the downloaded files for completeness or errors, re-download if necessary
+            if is_file_complete(outfile,minimum_steps):
+                print(f"The downloaded file {outfile} is complete!")
+            else:
+                attempts = 0
+                while attempts < max_attemps and not is_file_complete(outfile,minimum_steps):
+                    print(f"The downloaded file {outfile} is incomplete, download again. Attempt {attempts+1}/{max_attemps}")
                     RES.download(outfile)
+                    attempts += 1
+
+                if is_file_complete(outfile, minimum_steps):
+                    print(f"File {outfile} downloaded successfully after {attempts} attempts.")
                 else:
-                    break
+                    print(f"Failed to download the file {outfile} after {max_attemps} attempts.")        
+                
 
 
         # cat together the files and rmove the monthly ones
