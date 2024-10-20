@@ -7,10 +7,14 @@ from pprint import pprint
 import datetime
 import cdsapi
 from cdo import Cdo, CDOException
+from urllib3.exceptions import IncompleteRead
 
 cdo = Cdo()
 
+class MaxAttemptsError(Exception):
+    pass
 
+# check with cdo is the file is complete (approximately correct)
 def is_file_complete(filename, minimum_steps):
     """
     Is a file that we want to download complete?
@@ -137,23 +141,19 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
                         retrieve_dict,
                         )
             
-            RES.download(outfile)
-            
-            # Verify the downloaded files for completeness or errors, re-download if necessary
-            if is_file_complete(outfile,minimum_steps):
-                print(f"The downloaded file {outfile} is complete!")
-            else:
-                attempts = 0
-                while attempts < max_attemps and not is_file_complete(outfile,minimum_steps):
-                    print(f"The downloaded file {outfile} is incomplete, download again. Attempt {attempts+1}/{max_attemps}")
-                    RES.download(outfile)
-                    attempts += 1
+            #download data
+            attempt = 0
 
-                if is_file_complete(outfile, minimum_steps):
-                    print(f"File {outfile} downloaded successfully after {attempts} attempts.")
-                else:
-                    print(f"Failed to download the file {outfile} after {max_attemps} attempts.")        
+            while attempt < max_attemps:
                 
+                try:
+                    RES.download(outfile)
+                
+                except IncompleteRead as e:
+                    print(f"An IncompleteRead exception occurred: {e}\nRetrying the download (Attempt {attempt}/{max_attemps})")
+                    attempt += 1
+                    if attempt == max_attemps:
+                        raise MaxAttemptsError(f"Failed to download data for year {year} after {max_attemps} attempts")
 
 
         # cat together the files and rmove the monthly ones
