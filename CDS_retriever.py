@@ -8,6 +8,7 @@ import datetime
 import cdsapi
 from cdo import Cdo, CDOException
 from urllib3.exceptions import IncompleteRead
+import time
 
 cdo = Cdo()
 
@@ -52,7 +53,7 @@ def is_file_complete(filename, minimum_steps):
     return False
 
 
-def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, request = 'yearly',max_attemps=5):
+def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, request = 'yearly',max_attempts=5):
     """
     Retrieval function
     """
@@ -144,16 +145,26 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
             #download data
             attempt = 0
 
-            while attempt < max_attemps:
+            while attempt < max_attempts:
+
+                attempt += 1
                 
                 try:
                     RES.download(outfile)
+                    break
                 
                 except IncompleteRead as e:
-                    print(f"An IncompleteRead exception occurred: {e}\nRetrying the download (Attempt {attempt}/{max_attemps})")
-                    attempt += 1
-                    if attempt == max_attemps:
-                        raise MaxAttemptsError(f"Failed to download data for year {year} after {max_attemps} attempts")
+                    print((f"An IncompleteRead exception occurred: {e}"
+                           f"\nRetrying the download (Attempt {attempt}/{max_attempts})"))
+                except Exception as e:
+                    print((f"An unexpected error occurred: {e}"
+                           f"\nRetrying the download (Attempt {attempt}/{max_attempts})"))
+                    
+                time.sleep(2)
+                
+                if attempt == max_attempts:
+                    raise MaxAttemptsError((f"Failed to download data for year {year} "
+                                            f"after {max_attempts} attempts"))
 
 
         # cat together the files and rmove the monthly ones
