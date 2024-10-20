@@ -18,7 +18,7 @@ import shutil
 from multiprocessing import Process, Pool
 import glob
 
-from CDS_retriever import year_retrieve, year_convert, create_filename, first_last_year, which_new_years_download
+from CDS_retriever import year_retrieve, year_convert, create_filename, first_last_year, which_new_years_download, MaxAttemptsError
 from config import parser, load_config, print_config
 
 
@@ -106,6 +106,12 @@ def main():
                 
                     pool.starmap(year_retrieve, args)
     
+        except MaxAttemptsError as e:
+            print(("Execution stopped due to an error in a child process: "
+                   "failed to download file after maximum number of attempts. " 
+                   f"Error: {e}."
+                   ))
+
         except Exception as e:
             print(f"Execution stopped due to an error in a child process: {e}")
 
