@@ -15,7 +15,7 @@ cdo = Cdo()
 class MaxAttemptsError(Exception):
     pass
 
-# check with cdo is the file is complete (approximately correct)
+
 def is_file_complete(filename, minimum_steps):
     """
     Is a file that we want to download complete?
@@ -74,7 +74,7 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
         sys.exit('Unknown dataset!')
 
     # extract time information
-    product_type, day, time, time_kind, minimum_steps = define_time(freq)
+    product_type, day, t, time_kind, minimum_steps = define_time(freq)
     kind = kind + time_kind
 
     # set up the months loop
@@ -115,7 +115,7 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
                 'year': year,
                 'month': month,
                 'day': day,
-                'time': time,
+                'time': t,
             }
 
             if grid not in ['full']:
@@ -160,7 +160,7 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
                     print((f"An unexpected error occurred: {e}"
                            f"\nRetrying the download (Attempt {attempt}/{max_attempts})"))
                     
-                time.sleep(2)
+                time.sleep(5)
                 
                 if attempt == max_attempts:
                     raise MaxAttemptsError((f"Failed to download data for year {year} "

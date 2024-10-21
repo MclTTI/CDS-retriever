@@ -111,9 +111,11 @@ def main():
                    "failed to download file after maximum number of attempts. " 
                    f"Error: {e}."
                    ))
+            sys.exit(1)
 
         except Exception as e:
             print(f"Execution stopped due to an error in a child process: {e}")
+            sys.exit(1)
 
 
     if do_postproc :
