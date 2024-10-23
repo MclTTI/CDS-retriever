@@ -53,7 +53,7 @@ def is_file_complete(filename, minimum_steps):
     return False
 
 
-def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, request = 'yearly',max_attempts=5):
+def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, request = 'yearly',max_attempts=10):
     """
     Retrieval function
     """
@@ -160,7 +160,7 @@ def year_retrieve(dataset, var, freq, year, grid, levelout, area, outdir, reques
                     print((f"An unexpected error occurred: {e}"
                            f"\nRetrying the download (Attempt {attempt}/{max_attempts})"))
                     
-                time.sleep(5)
+                time.sleep(60)
                 
                 if attempt == max_attempts:
                     raise MaxAttemptsError((f"Failed to download data for year {year} "
